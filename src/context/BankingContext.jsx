@@ -1,6 +1,7 @@
 // src/context/BankingContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { initialBalance, initialBeneficiaries, initialTransactions } from '../data/demoData';
+import { validateTransferAmount } from '../utils/validation';
 
 const BankingContext = createContext();
 
@@ -51,12 +52,16 @@ export const BankingProvider = ({ children }) => {
   };
 
   const processTransfer = (recipient, amount, note) => {
-    const numAmount = parseFloat(amount);
-    
-    // Safety check against balance
-    if (numAmount > balance) {
-      return { success: false, reason: 'INSUFFICIENT_BALANCE' };
+    if (!recipient || !recipient.name) {
+      return { success: false, reason: 'INVALID_RECIPIENT' };
     }
+
+    const validationError = validateTransferAmount(amount, balance);
+    if (validationError) {
+      return { success: false, reason: validationError };
+    }
+
+    const numAmount = Number.parseFloat(amount);
 
     const refId = 'NIMMA-' + Math.floor(1000 + Math.random() * 9000);
     const now = new Date();
@@ -98,6 +103,7 @@ export const BankingProvider = ({ children }) => {
     setTransactions(initialTransactions);
     setShowBalance(true);
     localStorage.removeItem('nimmaBank_balance');
+    localStorage.removeItem('nimmaBank_showBalance');
     localStorage.removeItem('nimmaBank_beneficiaries');
     localStorage.removeItem('nimmaBank_transactions');
   };

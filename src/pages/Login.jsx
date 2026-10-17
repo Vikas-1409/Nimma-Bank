@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { ReadAloudButton } from '../components/ReadAloudButton';
 import { LogIn, Eye, EyeOff, KeyRound, UserCheck, AlertCircle, HelpCircle } from 'lucide-react';
+import { validatePassword, validateUserId } from '../utils/validation';
 
 export const Login = ({ onLoginSuccess, onGoRegister, onGoRecovery }) => {
   const { login } = useAuth();
@@ -18,12 +19,15 @@ export const Login = ({ onLoginSuccess, onGoRegister, onGoRecovery }) => {
     e.preventDefault();
     setErrorMessage('');
 
-    if (!userId.trim()) {
-      setErrorMessage(t('userIdLabel') + ' is required.');
+    const userIdError = validateUserId(userId);
+    if (userIdError) {
+      setErrorMessage(userIdError);
       return;
     }
-    if (!password.trim()) {
-      setErrorMessage(t('passwordLabel') + ' is required.');
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setErrorMessage(passwordError);
       return;
     }
 
@@ -31,7 +35,7 @@ export const Login = ({ onLoginSuccess, onGoRegister, onGoRecovery }) => {
     if (res.success) {
       onLoginSuccess();
     } else {
-      setErrorMessage(t('invalidCredentialsMsg'));
+      setErrorMessage(res.message || t('invalidCredentialsMsg'));
     }
   };
 

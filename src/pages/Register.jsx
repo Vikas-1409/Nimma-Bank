@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { ReadAloudButton } from '../components/ReadAloudButton';
 import { UserPlus, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { validatePassword, validateUserId } from '../utils/validation';
 
 export const Register = ({ onAccountCreated, onGoLogin }) => {
   const { register } = useAuth();
@@ -24,14 +25,19 @@ export const Register = ({ onAccountCreated, onGoLogin }) => {
       setErrorMsg(t('fullNameLabel') + ' is required.');
       return;
     }
-    if (!userId.trim()) {
-      setErrorMsg(t('userIdLabel') + ' is required.');
+
+    const userIdError = validateUserId(userId);
+    if (userIdError) {
+      setErrorMsg(userIdError);
       return;
     }
-    if (!password || password.length < 4) {
-      setErrorMsg('Password must be at least 4 characters.');
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setErrorMsg(passwordError);
       return;
     }
+
     if (password !== confirmPassword) {
       setErrorMsg('Passwords do not match.');
       return;

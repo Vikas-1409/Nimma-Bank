@@ -1,6 +1,7 @@
 // src/context/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { initialUserProfile } from '../data/demoData';
+import { validateUserId, validatePassword } from '../utils/validation';
 
 const AuthContext = createContext();
 
@@ -44,14 +45,17 @@ export const AuthProvider = ({ children }) => {
   }, [isAuthenticated]);
 
   const login = (userId, password) => {
-    // Fictional check: Accepts DEMO1234 or any valid demo user
-    if ((userId.toUpperCase() === 'DEMO1234' || userId.trim() !== '') && password) {
-      setIsAuthenticated(true);
-      localStorage.setItem('nimmaBank_auth', 'true');
-      setSessionTimeoutWarning(false);
-      return { success: true };
+    const userIdError = validateUserId(userId);
+    const passwordError = validatePassword(password);
+
+    if (userIdError || passwordError) {
+      return { success: false, message: userIdError || passwordError };
     }
-    return { success: false, message: 'Invalid User ID or Password' };
+
+    setIsAuthenticated(true);
+    localStorage.setItem('nimmaBank_auth', 'true');
+    setSessionTimeoutWarning(false);
+    return { success: true };
   };
 
   const register = (name, userId, password) => {

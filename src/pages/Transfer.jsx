@@ -7,6 +7,7 @@ import { ConfirmationDialog } from '../components/ConfirmationDialog';
 import { InsufficientBalanceModal } from '../components/InsufficientBalanceModal';
 import { ReadAloudButton } from '../components/ReadAloudButton';
 import { ArrowLeft, UserPlus, CheckCircle2, AlertCircle, Send, Edit, RefreshCw, FileText, Printer, WifiOff } from 'lucide-react';
+import { validateBeneficiary, validateTransferAmount } from '../utils/validation';
 
 export const Transfer = ({ onBack, onCompleteTransfer }) => {
   const { balance, beneficiaries, addBeneficiary, processTransfer } = useBanking();
@@ -39,9 +40,13 @@ export const Transfer = ({ onBack, onCompleteTransfer }) => {
   // Handle new beneficiary addition
   const handleSaveBeneficiary = (e) => {
     e.preventDefault();
-    if (!newRecName.trim() || !newRecBank.trim() || !newRecAcc.trim()) {
+
+    const validationError = validateBeneficiary(newRecName, newRecBank, newRecAcc);
+    if (validationError) {
+      setErrorMsg(validationError);
       return;
     }
+
     const added = addBeneficiary({
       name: newRecName,
       bank: newRecBank,
@@ -60,14 +65,9 @@ export const Transfer = ({ onBack, onCompleteTransfer }) => {
     e.preventDefault();
     setErrorMsg('');
 
-    const numAmount = parseFloat(amount);
-    if (isNaN(numAmount) || numAmount <= 0) {
-      setErrorMsg(t('invalidAmountMsg'));
-      return;
-    }
-    if (numAmount > balance) {
-      setShowInsufficientModal(true);
-      setErrorMsg(`${t('insufficientFundsMsg')} ₹${balance.toLocaleString('en-IN')}`);
+    const validationError = validateTransferAmount(amount, balance);
+    if (validationError) {
+      setErrorMsg(validationError);
       return;
     }
 
@@ -83,10 +83,10 @@ export const Transfer = ({ onBack, onCompleteTransfer }) => {
       return;
     }
 
-    const numAmount = parseFloat(amount);
-    if (numAmount > balance) {
+    const validationError = validateTransferAmount(amount, balance);
+    if (validationError) {
       setShowInsufficientModal(true);
-      setErrorMsg(`${t('insufficientFundsMsg')} ₹${balance.toLocaleString('en-IN')}`);
+      setErrorMsg(validationError);
       return;
     }
 
